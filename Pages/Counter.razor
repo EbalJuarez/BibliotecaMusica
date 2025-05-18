@@ -18,7 +18,7 @@
             </div>
             <div class="col">
                 <label for="description">Nombre del artista </label>
-                <InputTextArea id="description" class="form-control" @bind-Value="Albume.Artista" />
+                <InputText id="description" class="form-control" @bind-Value="Albume.Artista" />
             </div>
         </div>
         <p></p>
@@ -51,21 +51,14 @@
     {
         Albume.Listado_Canciones = Listado_canciones;
         Listado_Albums.Add(Albume);
-        // Guardar la lista de starships en LocalStorage como JSON
         localStorage.SetItem("starships", Listado_Albums);
 
     }
 
-    //Cada vez que se carga la página se leen los datos que ya estaban guardados anteriormente
-
-    //para que la lista ya tenga los datos anteriores y pueda ir agregando los nuevos
-
     protected override async Task OnInitializedAsync()
     {
-        // Recuperar la lista de starships desde LocalStorage a una variable var
         var savedStarships = localStorage.GetItem<List<Album>>("starships");
 
-        // Validar si la lista fue recuperada correctamente, copiarla a la lista
         if (savedStarships != null)
         {
             Listado_Albums = savedStarships;

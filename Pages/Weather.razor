@@ -1,57 +1,97 @@
 ﻿@page "/weather"
 @inject HttpClient Http
+@using BibliotecaMusica.Clases
+@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Albumes</PageTitle>
 
-<h1>Weather</h1>
+<h1>Canciones: </h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<p>Seleccione un artista: </p>
 
-@if (forecasts == null)
+<div>
+    <InputSelect @bind-Value="artista_seleccionado">
+        <option value="">Seleccione un artista: </option>
+        @foreach (var word in Listado_albumes)
+        {
+            <option value="@word.Artista">@word.Artista</option>
+        }
+    </InputSelect>
+</div>
+
+
+@if (!string.IsNullOrEmpty(artista_seleccionado))
 {
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <h4>Valores para "@artista_seleccionado":</h4>
+
+    @if (Listado_albumes == null || !Listado_albumes.Any())
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        var albumsFiltrados = Listado_albumes.Where(a => a.Artista == artista_seleccionado).ToList();
+
+        @if (!albumsFiltrados.Any())
+        {
+            <p>No se encontraron álbumes para el artista "@artista_seleccionado".</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre del álbum</th>
+                        <th>Fecha de publicación</th>
+                        <th>Listado de canciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var album in albumsFiltrados)
+                    {
+                        <tr>
+                            <td>@album.Titulo</td>
+                            <td>@album.Fecha_Publicacion</td>
+                            <td>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre de la canción</th>
+                                            <th>Duración</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (Cancion cancion in album.Listado_Canciones)
+                                        {
+                                            <tr>
+                                                <td>@cancion.Nombre_Cancion</td>
+                                                <td>@cancion.Duracion</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        }
+    }
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private string? artista_seleccionado;
+    private List<Album> Listado_albumes = new List<Album>();
+
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-    }
+        var savedStarships = localStorage.GetItem<List<Album>>("starships");
 
-    public class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        if (savedStarships != null)
+        {
+            Listado_albumes = savedStarships;
+        }
     }
 }

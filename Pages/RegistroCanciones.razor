@@ -3,7 +3,7 @@
 @using BibliotecaMusica.Clases
 <PageTitle>Formularios</PageTitle>
 
-<h1>New Ship Entry Form</h1>
+<h1>Formulario de Nueva Canción</h1>
 
 <EditForm Model="@canciones" OnValidSubmit="@Guardar">
     <DataAnnotationsValidator />
@@ -12,68 +12,57 @@
     <div class="container text-center">
         <div class="row">
             <div class="col">
-                <label for="identifier">Identifier: </label>
-                <InputText id="identifier" class="form-control" @bind-Value="canciones.Nombre_Cancion" />
+                <label for="identifier">Nombre de la canción: </label>
+                <InputText id="identifier" class="form-control" @bind-Value="canciones.Nombre_Cancion" required />
                 <ValidationMessage For="() => canciones.Nombre_Cancion" />
             </div>
             <div class="col">
-                <label for="description">Description </label>
-                <InputText id="description" class="form-control" @bind-Value="canciones.Duracion" />
+                <label for="description">Duración: </label>
+                <InputText id="description" class="form-control" @bind-Value="canciones.Duracion" required />
             </div>
         </div>
-        <p></p>
-        <div class="row">
-            <div class="col">
-                <label for="classification">Primary Classification: </label>
-                <InputSelect id="classification" class="form-select form-select-sm" @bind-Value="canciones.Artista">
-                    <option value="">Select classification ...</option>
-                    @foreach (var artistas in Listado_albumes)
-                    {
-                        <option value="Defense">@artistas.Artista</option>
 
+        <div class="row mt-3">
+            <div class="col">
+                <label for="classification">Artista: </label>
+                <InputSelect id="classification" class="form-select form-select-sm" @bind-Value="canciones.Artista" required>
+                    <option value="">Seleccione un artista...</option>
+                    @foreach (var artista in Listado_albumes.Select(a => a.Artista).Distinct())
+                    {
+                        <option value="@artista">@artista</option>
                     }
                 </InputSelect>
                 <ValidationMessage For="() => canciones.Artista" />
             </div>
         </div>
-        <p></p>
-        <p></p>
+
         <div class="row mt-3 text-center">
             <div class="col">
-                <button class="btn btn-dark" type="submit">Submit </button>
+                <button class="btn btn-dark" type="submit">Enviar</button>
             </div>
         </div>
     </div>
-
 </EditForm>
 
 @code {
     private Cancion canciones = new Cancion();
-    private List<Cancion> Listado_Canciones = new List<Cancion>();
     private List<Album> Listado_albumes = new List<Album>();
+
     private void Guardar()
     {
-        foreach(var album in Listado_albumes){
-            if(album.Artista == canciones.Artista){
-                album.Listado_Canciones.Add(canciones);
-            }
+        var album = Listado_albumes.FirstOrDefault(a => a.Artista == canciones.Artista);
+        if (album != null)
+        {
+            album.Listado_Canciones.Add(canciones);
         }
-        //Listado_albumes..Add(canciones);
-        // Guardar la lista de starships en LocalStorage como JSON
-        localStorage.SetItem("starships", Listado_Canciones);
 
+        localStorage.SetItem("starships", Listado_albumes);
     }
-
-    //Cada vez que se carga la página se leen los datos que ya estaban guardados anteriormente
-
-    //para que la lista ya tenga los datos anteriores y pueda ir agregando los nuevos
 
     protected override async Task OnInitializedAsync()
     {
-        // Recuperar la lista de starships desde LocalStorage a una variable var
         var savedStarships = localStorage.GetItem<List<Album>>("starships");
 
-        // Validar si la lista fue recuperada correctamente, copiarla a la lista
         if (savedStarships != null)
         {
             Listado_albumes = savedStarships;
